@@ -25,6 +25,7 @@
           <video id="liveVideo" autoplay muted playsinline></video>
           <canvas id="liveOverlay"></canvas>
           <div class="live-badge"><i></i><span id="liveStatus">尚未連線</span></div>
+          <div class="playback-badge" id="playbackBadge" hidden>↺ 事件回放</div>
           <div class="video-time"><span id="cameraClock">--:--:--</span><small id="delayBadge">校正 0 ms</small></div>
           <div class="video-empty" id="videoEmpty"><span>◉</span><strong>攝影機預覽</strong><small>確認畫面正在 LIVE 即可開始記錄</small></div>
         </div>
@@ -88,6 +89,15 @@
           <div id="timeline" class="timeline"><div class="empty"><span>柔</span><strong>等待第一個事件</strong><p>事件會自動帶入比賽時間</p></div></div>
           <div class="timeline-footer"><span>點選事件可查看完整備註</span><button id="finishBtn">結束並查看摘要</button></div>
         </aside>
+      </section>
+
+      <section class="match-statistics">
+        <div class="statistics-head">
+          <div><span>SKILL DISTRIBUTION</span><h2>對戰技術統計</h2><p>目前對手：<strong id="statsOpponent">對方選手</strong>。統計會隨每筆事件即時更新。</p></div>
+          <div class="statistics-kpis"><div><small>我方事件</small><strong id="myEventTotal">0</strong></div><div><small>對手事件</small><strong id="opponentEventTotal">0</strong></div><div><small>技術類型</small><strong id="skillTypeTotal">0</strong></div></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>技術／事件類型</th><th>我方</th><th>對手</th><th>合計</th><th>我方占比</th></tr></thead><tbody id="statisticsBody"></tbody></table></div>
+        <p class="statistics-note">註：這裡統計的是場邊紀錄次數，不代表官方得分或技術成功率。若要計算成功率，需同時記錄每次嘗試與成功結果。</p>
       </section>
     </main>
 
