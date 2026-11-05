@@ -1,4 +1,10 @@
 {
+	"name": "combat-intelligence-recorder",
+	"private": true,
+	"dependencies": {
+		"html2canvas": "^1.4.1",
+		"jspdf": "^4.2.1"
+	},
 	"devDependencies": {
 		"firebase-tools": "^15.29.0"
 	}

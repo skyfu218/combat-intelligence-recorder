@@ -4,20 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
   <meta name="theme-color" content="#07110f">
-  <title>柔道技術紀錄｜場邊助手</title>
+  <title>競技運動情蒐記錄系統｜Combat Intelligence Recorder</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark">柔</span><div><strong>柔道技術紀錄</strong><small>JUDO CORNER LOG</small></div></div>
-      <div class="match-meta"><span id="saveState" class="saved">● 已儲存於本機</span><button id="exportBtn" class="ghost">匯出</button><button id="resetBtn" class="ghost danger-text">新比賽</button></div>
+      <div class="brand"><span class="brand-mark" id="brandMark">競</span><div><strong>競技運動情蒐記錄系統</strong><small>COMBAT INTELLIGENCE RECORDER · CIR</small></div></div>
+      <div class="match-meta"><span id="saveState" class="saved">● 已儲存於本機</span><button id="lineBtn" class="ghost line-button">LINE 分享</button><button id="exportBtn" class="ghost">匯出</button><button id="resetBtn" class="ghost danger-text">新比賽</button></div>
     </header>
 
     <nav class="mode-nav" aria-label="分析模式">
       <button class="active" data-mode="live"><span>01</span>即時場邊</button>
       <button data-mode="review"><span>02</span>匯入賽事・AI 分析</button>
     </nav>
+
+    <section class="sport-switcher"><div><span>SPORT PROFILE</span><strong id="sportTitle">柔道 · Judo</strong><small id="ruleSource">依 IJF 2026 規則欄位設計</small></div><div id="sportButtons" class="sport-buttons"></div></section>
 
     <main id="liveMode" class="mode-view active">
       <section class="live-media">
@@ -46,7 +48,7 @@
       <section class="scoreboard" aria-label="比賽計分板">
         <button class="athlete white selected" data-side="white" aria-pressed="true">
           <span class="side-label">白方 · WHITE</span><strong contenteditable="true" id="whiteName">我方選手</strong>
-          <div class="scoreline"><b id="whiteScore">0</b><span><i id="whiteW">0</i> W-A</span><span><i id="whiteY">0</i> YUKO</span><span class="penalty"><i id="whiteS">0</i> SHIDO</span></div>
+          <div class="scoreline"><b id="whiteScore">0</b><span><i id="whiteW">0</i> <em id="auxLabel1">W-A</em></span><span><i id="whiteY">0</i> <em id="auxLabel2">YUKO</em></span><span class="penalty"><i id="whiteS">0</i> <em id="auxLabel3">SHIDO</em></span></div>
         </button>
         <div class="clock-panel">
           <span id="phaseLabel">REGULAR TIME</span>
@@ -55,7 +57,7 @@
         </div>
         <button class="athlete blue" data-side="blue" aria-pressed="false">
           <span class="side-label">藍方 · BLUE</span><strong contenteditable="true" id="blueName">對方選手</strong>
-          <div class="scoreline"><b id="blueScore">0</b><span><i id="blueW">0</i> W-A</span><span><i id="blueY">0</i> YUKO</span><span class="penalty"><i id="blueS">0</i> SHIDO</span></div>
+          <div class="scoreline"><b id="blueScore">0</b><span><i id="blueW">0</i> <em>W-A</em></span><span><i id="blueY">0</i> <em>YUKO</em></span><span class="penalty"><i id="blueS">0</i> <em>SHIDO</em></span></div>
         </button>
       </section>
 
@@ -63,17 +65,10 @@
         <div class="capture-panel">
           <div class="context-strip"><div><span class="dot"></span>目前標記：<strong id="activeSide">白方／我方選手</strong></div><span>先選選手，再按事件</span></div>
 
-          <div class="primary-actions">
-            <button class="event ippon" data-event="一本" data-kind="score"><small>IPPON</small><strong>一本</strong><span>立即結束</span></button>
-            <button class="event waza" data-event="技有" data-kind="score"><small>WAZA-ARI</small><strong>技有</strong><span>10–19 秒壓制</span></button>
-            <button class="event yuko" data-event="有效" data-kind="score"><small>YUKO</small><strong>有效</strong><span>5–9 秒壓制</span></button>
-            <button class="event shido" data-event="指導" data-kind="penalty"><small>SHIDO</small><strong>指導</strong><span>犯規警告</span></button>
-          </div>
+          <div class="primary-actions" id="primaryActions"></div>
 
           <div class="section-head"><div><span>TECHNIQUE TAG</span><h2>發生了什麼？</h2></div><span id="stepHint">可直接記大類，之後再補細節</span></div>
-          <div id="categoryTabs" class="category-tabs">
-            <button class="active" data-category="立技">立技</button><button data-category="寢技">寢技</button><button data-category="轉換">轉換</button><button data-category="攻防">攻防</button><button data-category="狀態">狀態</button>
-          </div>
+          <div id="categoryTabs" class="category-tabs"></div>
           <div id="techniqueGrid" class="technique-grid"></div>
 
           <div class="note-box">
@@ -147,11 +142,14 @@
   <dialog id="summaryDialog">
     <div class="dialog-head"><div><span>POST-MATCH SUMMARY</span><h2>比賽技術摘要</h2></div><button id="closeSummary">×</button></div>
     <div id="summaryContent"></div>
-    <div class="dialog-actions"><button id="jsonBtn" class="ghost">下載 JSON</button><button id="csvBtn" class="primary">下載 CSV</button></div>
+    <div class="dialog-actions"><button id="summaryLineBtn" class="ghost line-button">LINE 分享</button><button id="summaryPdfBtn" class="ghost">下載 PDF</button><button id="jsonBtn" class="ghost">下載 JSON</button><button id="csvBtn" class="primary">下載 CSV</button></div>
   </dialog>
   <dialog id="confirmDialog"><form method="dialog"><h2>開始新比賽？</h2><p>目前紀錄會被清除。建議先匯出備份。</p><div class="dialog-actions"><button value="cancel" class="ghost">取消</button><button id="confirmReset" value="default" class="danger">清除並開始</button></div></form></dialog>
-  <dialog id="reportDialog" class="report-dialog"><div class="dialog-head"><div><span>JUDO MATCH REPORT</span><h2>柔道技術分析報告書</h2></div><button id="closeReport">×</button></div><div id="reportContent"></div><div class="dialog-actions"><button id="printReport" class="primary">列印／另存 PDF</button></div></dialog>
+  <dialog id="reportDialog" class="report-dialog"><div class="dialog-head"><div><span>COMBAT INTELLIGENCE REPORT</span><h2 id="reportDialogTitle">競技運動技術分析報告書</h2></div><button id="closeReport">×</button></div><div id="reportContent"></div><div class="dialog-actions"><button id="reportLineBtn" class="ghost line-button">LINE 分享</button><button id="printReport" class="primary">下載 PDF</button></div></dialog>
   <div id="toast" role="status"></div>
+  <script src="vendor/html2canvas.min.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="sports-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
