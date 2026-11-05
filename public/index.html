@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#07110f">
+  <title>競技運動情蒐記錄系統｜Combat Intelligence Recorder</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" id="brandMark">競</span><div><strong>競技運動情蒐記錄系統</strong><small>COMBAT INTELLIGENCE RECORDER · CIR</small></div></div>
+      <div class="match-meta"><span id="saveState" class="saved">● 已儲存於本機</span><button id="lineBtn" class="ghost line-button">LINE 分享</button><button id="exportBtn" class="ghost">匯出</button><button id="resetBtn" class="ghost danger-text">新比賽</button></div>
+    </header>
+
+    <nav class="mode-nav" aria-label="分析模式">
+      <button class="active" data-mode="live"><span>01</span>即時場邊</button>
+      <button data-mode="review"><span>02</span>匯入賽事・AI 分析</button>
+    </nav>
+
+    <section class="sport-switcher"><div><span>SPORT PROFILE</span><strong id="sportTitle">柔道 · Judo</strong><small id="ruleSource">依 IJF 2026 規則欄位設計</small></div><div id="sportButtons" class="sport-buttons"></div></section>
+
+    <main id="liveMode" class="mode-view active">
+      <section class="live-media">
+        <div class="video-stage" id="liveStage">
+          <video id="liveVideo" autoplay muted playsinline></video>
+          <canvas id="liveOverlay"></canvas>
+          <div class="live-badge"><i></i><span id="liveStatus">尚未連線</span></div>
+          <div class="playback-badge" id="playbackBadge" hidden>↺ 事件回放</div>
+          <div class="video-time"><span id="cameraClock">--:--:--</span><small id="delayBadge">校正 0 ms</small></div>
+          <div class="video-empty" id="videoEmpty"><span>◉</span><strong>攝影機預覽</strong><small>確認畫面正在 LIVE 即可開始記錄</small></div>
+        </div>
+        <div class="camera-controls">
+          <div class="camera-head"><div><span>LIVE INPUT</span><h2>即時影像</h2></div><strong id="recordingState">待機</strong></div>
+          <label>攝影機來源<select id="cameraSelect"><option value="">預設攝影機</option></select></label>
+          <div class="camera-actions"><button id="cameraBtn" class="primary">開啟 LIVE</button><button id="recordBtn" class="ghost" disabled>開始錄影</button></div>
+          <div class="phone-tip"><strong>使用手機架拍攝</strong><p>直接在手機開啟本網站並選擇後鏡頭。若手機只當遠端鏡頭，需另接支援 UVC／WebRTC 的傳輸方式。</p></div>
+          <div class="calibration">
+            <div><strong>傳輸延遲校正</strong><small>校正後，手動事件時間會自動回推</small></div>
+            <output id="delayValue">0 ms</output>
+            <input id="delaySlider" type="range" min="0" max="5000" step="50" value="0" aria-label="影像延遲毫秒">
+            <div class="calibration-actions"><button id="calibrateBtn">開始閃光校正</button><button id="seenBtn" disabled>影像看到閃光</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="scoreboard" aria-label="比賽計分板">
+        <button class="athlete white selected" data-side="white" aria-pressed="true">
+          <span class="side-label">白方 · WHITE</span><strong contenteditable="true" id="whiteName">我方選手</strong>
+          <div class="scoreline"><b id="whiteScore">0</b><span><i id="whiteW">0</i> <em id="auxLabel1">W-A</em></span><span><i id="whiteY">0</i> <em id="auxLabel2">YUKO</em></span><span class="penalty"><i id="whiteS">0</i> <em id="auxLabel3">SHIDO</em></span></div>
+        </button>
+        <div class="clock-panel">
+          <span id="phaseLabel">REGULAR TIME</span>
+          <button id="clockBtn" class="clock" aria-label="開始或暫停計時">04:00</button>
+          <div class="clock-tools"><button id="minusTime">− 1s</button><button id="gsBtn">GOLDEN SCORE</button><button id="plusTime">+ 1s</button></div>
+        </div>
+        <button class="athlete blue" data-side="blue" aria-pressed="false">
+          <span class="side-label">藍方 · BLUE</span><strong contenteditable="true" id="blueName">對方選手</strong>
+          <div class="scoreline"><b id="blueScore">0</b><span><i id="blueW">0</i> <em>W-A</em></span><span><i id="blueY">0</i> <em>YUKO</em></span><span class="penalty"><i id="blueS">0</i> <em>SHIDO</em></span></div>
+        </button>
+      </section>
+
+      <section class="workspace">
+        <div class="capture-panel">
+          <div class="context-strip"><div><span class="dot"></span>目前標記：<strong id="activeSide">白方／我方選手</strong></div><span>先選選手，再按事件</span></div>
+
+          <div class="primary-actions" id="primaryActions"></div>
+
+          <div class="section-head"><div><span>TECHNIQUE TAG</span><h2>發生了什麼？</h2></div><span id="stepHint">可直接記大類，之後再補細節</span></div>
+          <div id="categoryTabs" class="category-tabs"></div>
+          <div id="techniqueGrid" class="technique-grid"></div>
+
+          <div class="note-box">
+            <textarea id="noteInput" rows="2" placeholder="選填備註，例如：右組、先搶袖、對方往後退…"></textarea>
+            <button id="micBtn" class="mic" aria-label="開始語音備註">◉<span>語音</span></button>
+            <button id="quickNoteBtn" class="add-note">＋ 備註</button>
+          </div>
+        </div>
+
+        <aside class="timeline-panel">
+          <div class="timeline-head"><div><span>LIVE TIMELINE</span><h2>即時事件</h2></div><button id="undoBtn" disabled>↶ 復原</button></div>
+          <div class="stats-row"><div><small>總事件</small><strong id="eventCount">0</strong></div><div><small>我方主動進攻</small><strong id="attackRate">—</strong></div><div><small>目前狀態</small><strong id="matchState">進行中</strong></div></div>
+          <div id="timeline" class="timeline"><div class="empty"><span>柔</span><strong>等待第一個事件</strong><p>事件會自動帶入比賽時間</p></div></div>
+          <div class="timeline-footer"><span>點選事件可查看完整備註</span><button id="finishBtn">結束並查看摘要</button></div>
+        </aside>
+      </section>
+
+      <section class="match-statistics">
+        <div class="statistics-head">
+          <div><span>SKILL DISTRIBUTION</span><h2>對戰技術統計</h2><p>目前對手：<strong id="statsOpponent">對方選手</strong>。統計會隨每筆事件即時更新。</p></div>
+          <div class="statistics-kpis"><div><small>我方事件</small><strong id="myEventTotal">0</strong></div><div><small>對手事件</small><strong id="opponentEventTotal">0</strong></div><div><small>技術類型</small><strong id="skillTypeTotal">0</strong></div></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>技術／事件類型</th><th>我方</th><th>對手</th><th>合計</th><th>我方占比</th></tr></thead><tbody id="statisticsBody"></tbody></table></div>
+        <p class="statistics-note">註：這裡統計的是場邊紀錄次數，不代表官方得分或技術成功率。若要計算成功率，需同時記錄每次嘗試與成功結果。</p>
+      </section>
+    </main>
+
+    <main id="reviewMode" class="mode-view">
+      <section class="review-hero">
+        <div><span>POST-MATCH INTELLIGENCE</span><h1>匯入完整賽事，建立可複核的技術報告</h1><p>影片留在本機瀏覽器。系統以畫面變化找出高動作候選，再由教練確認事件、角度與建議。</p></div>
+        <label class="upload-card"><input id="videoFile" type="file" accept="video/*"><span>＋</span><strong>選擇賽事影片</strong><small>MP4、MOV 或瀏覽器可播放格式</small></label>
+      </section>
+
+      <section class="review-workspace">
+        <div class="review-video-card">
+          <div class="review-stage" id="reviewStage">
+            <video id="reviewVideo" controls playsinline></video>
+            <canvas id="poseCanvas"></canvas>
+            <div class="review-placeholder" id="reviewPlaceholder"><span>▶</span><strong>尚未匯入影片</strong></div>
+          </div>
+          <div class="review-toolbar">
+            <button id="analyzeBtn" class="primary" disabled>AI 掃描候選事件</button>
+            <button id="captureBtn" class="ghost" disabled>擷取目前畫面</button>
+            <button id="poseBtn" class="ghost" disabled>顯示角度骨架</button>
+            <span id="analysisProgress">等待影片</span>
+          </div>
+          <div class="pose-guide" id="poseGuide" hidden><strong>角度標註模式</strong><span>拖曳人體節點到選手關節位置；角度會直接標示在人體上。</span><button id="savePoseBtn">將角度存入目前事件</button></div>
+        </div>
+
+        <aside class="candidate-panel">
+          <div class="candidate-head"><div><span>AI CANDIDATES</span><h2>候選事件</h2></div><strong id="candidateCount">0</strong></div>
+          <div id="candidateList" class="candidate-list"><div class="candidate-empty">匯入影片後開始掃描</div></div>
+        </aside>
+      </section>
+
+      <section class="coach-review">
+        <div class="section-head"><div><span>COACH REVIEW</span><h2>教練確認與評語</h2></div><button id="addManualEvent" class="ghost" disabled>＋ 目前時間新增事件</button></div>
+        <div class="coach-grid">
+          <div id="eventEditor" class="event-editor empty-editor">請先選擇一個候選事件</div>
+          <aside class="suggestion-library"><span>建議概念庫</span><h3>教練複習方向</h3><div id="conceptChips"></div><p>下拉選單提供提醒，不會取代教練判斷；所有內容都可手動修改。</p></aside>
+        </div>
+      </section>
+
+      <section class="report-builder">
+        <div><span>REPORT BUILDER</span><h2>照片、時間點、事件、角度與建議一次整理</h2><p>僅會納入教練已確認的事件；可在列印視窗另存 PDF。</p></div>
+        <button id="reportBtn" class="primary" disabled>產生報告書</button>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="summaryDialog">
+    <div class="dialog-head"><div><span>POST-MATCH SUMMARY</span><h2>比賽技術摘要</h2></div><button id="closeSummary">×</button></div>
+    <div id="summaryContent"></div>
+    <div class="dialog-actions"><button id="summaryLineBtn" class="ghost line-button">LINE 分享</button><button id="summaryPdfBtn" class="ghost">下載 PDF</button><button id="jsonBtn" class="ghost">下載 JSON</button><button id="csvBtn" class="primary">下載 CSV</button></div>
+  </dialog>
+  <dialog id="confirmDialog"><form method="dialog"><h2>開始新比賽？</h2><p>目前紀錄會被清除。建議先匯出備份。</p><div class="dialog-actions"><button value="cancel" class="ghost">取消</button><button id="confirmReset" value="default" class="danger">清除並開始</button></div></form></dialog>
+  <dialog id="reportDialog" class="report-dialog"><div class="dialog-head"><div><span>COMBAT INTELLIGENCE REPORT</span><h2 id="reportDialogTitle">競技運動技術分析報告書</h2></div><button id="closeReport">×</button></div><div id="reportContent"></div><div class="dialog-actions"><button id="reportLineBtn" class="ghost line-button">LINE 分享</button><button id="printReport" class="primary">下載 PDF</button></div></dialog>
+  <div id="toast" role="status"></div>
+  <script src="vendor/html2canvas.min.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="sports-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
