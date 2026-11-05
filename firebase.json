@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "target": "combat-intel",
     "public": ".",
     "ignore": ["firebase.json", ".firebaserc", ".git/**", "node_modules/**", "package.json", "pnpm-lock.yaml", "README.md"],
     "headers": [{
