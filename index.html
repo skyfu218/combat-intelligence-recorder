@@ -10,7 +10,7 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark" id="brandMark">競</span><div><strong>競技運動情蒐記錄系統</strong><small>COMBAT INTELLIGENCE RECORDER · CIR</small></div></div>
+      <div class="brand"><span id="brandMark" hidden></span><img class="brand-logo" src="assets/combat-sports-intelligence-logo.png" alt="Combat Sports Intelligence Collection System"><div class="brand-title"><strong>競技運動情蒐記錄系統</strong><small>COMBAT INTELLIGENCE RECORDER · CIR</small></div></div>
       <div class="match-meta"><span id="saveState" class="saved">● 已儲存於本機</span><button id="lineBtn" class="ghost line-button">LINE 分享</button><button id="exportBtn" class="ghost">匯出</button><button id="resetBtn" class="ghost danger-text">新比賽</button></div>
     </header>
 
@@ -122,6 +122,24 @@
           <div class="candidate-head"><div><span>AI CANDIDATES</span><h2>候選事件</h2></div><strong id="candidateCount">0</strong></div>
           <div id="candidateList" class="candidate-list"><div class="candidate-empty">匯入影片後開始掃描</div></div>
         </aside>
+      </section>
+
+      <section class="review-tagging">
+        <div class="section-head review-tag-head"><div><span>VIDEO TECHNIQUE TAG</span><h2>暫停影片，立即登記事件</h2><p>所有標記會綁定目前影片時間，並分別累計我方與對方技術統計。</p></div><strong id="reviewTagHint">請先匯入影片</strong></div>
+        <div class="review-side-compare">
+          <button id="reviewMySide" class="review-side-card active" data-review-side="我方"><span>LEFT · MY ATHLETE</span><label>我方選手<input id="reviewWhiteName" value="我方選手" aria-label="我方選手名稱"></label><strong id="reviewMyTotal">0</strong><small>已標記事件</small></button>
+          <button id="reviewOpponentSide" class="review-side-card opponent" data-review-side="對方"><span>RIGHT · OPPONENT</span><label>對方選手<input id="reviewBlueName" value="對方選手" aria-label="對方選手名稱"></label><strong id="reviewOpponentTotal">0</strong><small>已標記事件</small></button>
+        </div>
+        <div class="review-tag-controls">
+          <div class="review-selected">目前登記：<strong id="reviewActiveSide">我方／我方選手</strong><span id="reviewCurrentTime">00:00</span></div>
+          <div id="reviewQuickActions" class="review-quick-actions"></div>
+          <div id="reviewCategoryTabs" class="category-tabs"></div>
+          <div id="reviewTechniqueGrid" class="technique-grid review-technique-grid"></div>
+        </div>
+        <div class="review-analysis-grid">
+          <article><div class="review-analysis-title"><span>我方選手</span><strong id="reviewMyStatsName">我方選手</strong></div><div id="reviewMyStats" class="review-side-stats"><p>尚無技術標記</p></div></article>
+          <article><div class="review-analysis-title"><span>對方選手</span><strong id="reviewOpponentStatsName">對方選手</strong></div><div id="reviewOpponentStats" class="review-side-stats"><p>尚無技術標記</p></div></article>
+        </div>
       </section>
 
       <section class="coach-review">
